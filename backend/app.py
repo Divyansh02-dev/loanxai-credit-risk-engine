@@ -19,7 +19,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import shap
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 warnings.filterwarnings("ignore")
@@ -27,11 +27,16 @@ warnings.filterwarnings("ignore")
 # ─────────────────────────────────────────────
 # App Setup
 # ─────────────────────────────────────────────
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend"))
+STATIC_DIR = os.path.join(FRONTEND_DIR, "static")
+MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
+
+app = Flask(__name__, static_folder=None)
 CORS(app)  # Allow requests from frontend (index.html)
 
-BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
+print("Frontend dir:", FRONTEND_DIR)
+print("Static dir:", STATIC_DIR)
 
 # ─────────────────────────────────────────────
 # Load Model & SHAP Explainer (once at startup)
@@ -638,6 +643,14 @@ def get_confidence_level(probability):
 # Routes
 # ─────────────────────────────────────────────
 
+@app.route("/")
+def index():
+    return send_from_directory(FRONTEND_DIR, "index.html")
+
+@app.route("/static/<path:path>")
+def static_files(path):
+    return send_from_directory(STATIC_DIR, path)
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({
@@ -786,8 +799,10 @@ def predict():
 # Entry Point
 # ─────────────────────────────────────────────
 if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 5000))
     print("=" * 52)
-    print("  LoanXAI Backend  ->  http://localhost:5000")
+    print(f"  LoanXAI Backend  ->  http://0.0.0.0:{port}")
     print("  Press Ctrl+C to stop")
     print("=" * 52)
-    app.run(debug=True, port=5000)
+    app.run(host="0.0.0.0", port=port)
