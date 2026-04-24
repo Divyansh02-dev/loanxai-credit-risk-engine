@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LoanXAI — Indian Credit Risk Assessment</title>
+  <link rel="stylesheet" href="static/css/styles.css"/>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════ -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-icon">₹</div>
+    <div>
+      <div class="logo-name">Loan<span>XAI</span></div>
+      <div class="logo-tagline">EXPLAINABLE AI · INDIAN CREDIT RISK</div>
+    </div>
+  </div>
+  <div class="badge badge-live">● MODEL ACTIVE</div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     NAV TABS
+══════════════════════════════════════════ -->
+<nav class="nav">
+  <button id="nav-application" class="nav-btn active"  onclick="showTab('application')">📋 Application Form</button>
+  <button id="nav-result"      class="nav-btn"         onclick="showTab('result')">📊 AI Result</button>
+  <button id="nav-glossary"    class="nav-btn"         onclick="showTab('glossary')">📖 Loan Glossary</button>
+  <button id="nav-metrics"     class="nav-btn"         onclick="showTab('metrics')">📈 Model Metrics</button>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     PAGE: APPLICATION FORM
+══════════════════════════════════════════ -->
+<div id="page-application" class="page">
+  <div class="form-grid">
+
+    <!-- ─── LEFT: Input Card ─── -->
+    <div class="card">
+      <div class="card-title">Applicant Details</div>
+      <div class="card-sub">Fill all fields for accurate AI analysis. All amounts in Indian Rupees (₹).</div>
+
+      <!-- Personal -->
+      <div class="sec-sep">Personal Info</div>
+
+      <div class="field">
+        <label>Full Name</label>
+        <input id="f_name" class="inp" type="text" value="Ramesh Kumar Singh" placeholder="Applicant full name"/>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Age (Years)</label>
+          <div class="field-hint">18 – 65</div>
+          <input id="f_age" class="inp" type="number" value="34" min="18" max="65"/>
+        </div>
+        <div class="field">
+          <label>Gender</label>
+          <select id="f_gender" class="inp">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Children</label>
+          <input id="f_children" class="inp" type="number" value="1" min="0" max="10"/>
+        </div>
+        <div class="field">
+          <label>Family Members</label>
+          <input id="f_family" class="inp" type="number" value="3" min="1" max="15"/>
+        </div>
+      </div>
+
+      <!-- Financial -->
+      <div class="sec-sep">Financial Details</div>
+
+      <div class="field">
+        <label>Annual Income (₹)</label>
+        <div class="field-hint">Total yearly income from all sources before tax</div>
+        <div class="inp-prefix-wrap">
+          <span class="inp-prefix">₹</span>
+          <input id="f_income" class="inp" type="number" value="480000" min="0" step="10000"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>CIBIL Score</label>
+        <div class="field-hint">Indian credit score — enter 300 to 900. Ideal is 750+.</div>
+        <input id="f_cibil" class="inp" type="number" value="710" min="300" max="900"/>
+      </div>
+
+      <div class="field">
+        <label>Loan Amount Requested (₹)</label>
+        <div class="inp-prefix-wrap">
+          <span class="inp-prefix">₹</span>
+          <input id="f_loan" class="inp" type="number" value="600000" min="10000" step="10000"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Monthly EMI You Can Pay (₹)</label>
+        <div class="field-hint">Maximum comfortable monthly repayment amount</div>
+        <div class="inp-prefix-wrap">
+          <span class="inp-prefix">₹</span>
+          <input id="f_emi" class="inp" type="number" value="18000" min="0" step="500"/>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Price of Goods / Property (₹)</label>
+        <div class="field-hint">Value of the item being financed with this loan</div>
+        <div class="inp-prefix-wrap">
+          <span class="inp-prefix">₹</span>
+          <input id="f_goods" class="inp" type="number" value="550000" min="0" step="10000"/>
+        </div>
+      </div>
+
+      <!-- Employment -->
+      <div class="sec-sep">Employment</div>
+
+      <div class="field">
+        <label>Employment Type</label>
+        <select id="f_emp_type" class="inp">
+          <option value="Working">Salaried / Working</option>
+          <option value="State servant">Government Employee</option>
+          <option value="Commercial associate">Business / Commercial</option>
+          <option value="Pensioner">Pensioner / Retired</option>
+          <option value="Student">Student</option>
+          <option value="Unemployed">Unemployed</option>
+          <option value="Maternity leave">Maternity Leave</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Years at Current Job</label>
+        <input id="f_emp_yrs" class="inp" type="number" value="4" min="0" max="50" step="0.5"/>
+      </div>
+
+      <div class="field">
+        <label>Education Level</label>
+        <select id="f_education" class="inp">
+          <option value="Secondary / secondary special">12th Pass / Secondary</option>
+          <option value="Higher education">Graduate / Higher Education</option>
+          <option value="Incomplete higher">Incomplete Higher Education</option>
+          <option value="Lower secondary">Below 10th Standard</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Occupation</label>
+        <select id="f_occupation" class="inp">
+          <option value="Laborers">Labourer / Factory Worker</option>
+          <option value="Core staff">Core Staff</option>
+          <option value="Sales staff">Sales</option>
+          <option value="Managers">Manager</option>
+          <option value="Drivers">Driver</option>
+          <option value="High skill tech staff">IT / Tech Professional</option>
+          <option value="Medicine staff">Medical Professional</option>
+          <option value="Security staff">Security Personnel</option>
+          <option value="Secretaries">Clerical / Admin</option>
+          <option value="Cooking staff">Cook / Food Service</option>
+        </select>
+      </div>
+
+      <!-- Assets -->
+      <div class="sec-sep">Assets &amp; Living Situation</div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Owns a House / Property?</label>
+          <select id="f_property" class="inp">
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Owns a Car?</label>
+          <select id="f_car" class="inp">
+            <option value="0">No</option>
+            <option value="1">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Housing Situation</label>
+        <select id="f_housing" class="inp">
+          <option value="House / apartment">Own House / Apartment</option>
+          <option value="Rented apartment">Rented Apartment</option>
+          <option value="With parents">Living with Parents</option>
+          <option value="Municipal apartment">Municipal Housing</option>
+          <option value="Office apartment">Office Accommodation</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Marital Status</label>
+        <select id="f_marital" class="inp">
+          <option value="Married">Married</option>
+          <option value="Single / not married">Single / Unmarried</option>
+          <option value="Separated">Separated / Divorced</option>
+          <option value="Widow">Widow / Widower</option>
+        </select>
+      </div>
+
+      <!-- Credit History -->
+      <div class="sec-sep">Credit History</div>
+
+      <div class="field">
+        <label>Credit Enquiries in Last Year</label>
+        <div class="field-hint">How many times banks have checked your credit recently</div>
+        <input id="f_enquiries" class="inp" type="number" value="1" min="0" max="20"/>
+      </div>
+
+      <div class="field">
+        <label>Defaults in Social Circle (last 30 days)</label>
+        <div class="field-hint">People known to you who have recently defaulted on loans</div>
+        <input id="f_social_def" class="inp" type="number" value="0" min="0" max="10"/>
+      </div>
+
+      <div class="field">
+        <label>Key ID Document Submitted?</label>
+        <div class="field-hint">Aadhaar / PAN / Passport equivalent</div>
+        <select id="f_doc3" class="inp">
+          <option value="1">Yes — Submitted</option>
+          <option value="0">No — Not yet submitted</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Region Risk Rating</label>
+        <select id="f_region" class="inp">
+          <option value="1">1 — Low Risk (Metro city)</option>
+          <option value="2" selected>2 — Average (Tier-2 city)</option>
+          <option value="3">3 — Higher Risk (Rural / Tier-3)</option>
+        </select>
+      </div>
+
+      <button id="btn-analyze" class="btn-analyze" onclick="runAnalysis()">
+        🔍 Run AI Analysis
+      </button>
+    </div>
+
+    <!-- ─── RIGHT: Live Indicators ─── -->
+    <div class="right-col">
+
+      <!-- Live stats -->
+      <div class="card">
+        <div class="card-title">Live Risk Indicators</div>
+        <div class="card-sub">Updates automatically as you fill the form</div>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="stat-label">Loan / Income</div>
+            <div id="ind_lti" class="stat-val c-muted">—</div>
+            <div class="stat-hint">Should be &lt; 4×</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">CIBIL Band</div>
+            <div id="ind_cibil" class="stat-val c-muted">—</div>
+            <div id="ind_cibil_hint" class="stat-hint">Enter CIBIL score</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Est. Monthly EMI</div>
+            <div id="ind_emi" class="stat-val c-orange">—</div>
+            <div class="stat-hint">at 11% p.a., 5 yrs</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMI breakup -->
+      <div class="card">
+        <div class="card-title">EMI Breakup Estimate</div>
+        <div class="card-sub">Based on 11% p.a. interest for 60 months (5 years)</div>
+        <div id="emi_principal" class="emi-row" style="display:flex">
+          <span>Loan Amount (Principal)</span><span id="emi_principal">—</span>
+        </div>
+        <div class="emi-row"><span>Monthly EMI</span>         <span id="emi_monthly">—</span></div>
+        <div class="emi-row"><span>Total Interest (5 yrs)</span><span id="emi_interest" class="c-red">—</span></div>
+        <div class="emi-row"><span>Total Amount Payable</span> <span id="emi_total" class="c-amber">—</span></div>
+      </div>
+
+      <!-- CIBIL guide -->
+      <div class="card">
+        <div class="card-title">CIBIL Score Bands</div>
+        <div class="card-sub">How Indian lenders view your credit score</div>
+        <div class="cibil-band" style="background:#FEF2F2;border-color:#FECACA">
+          <span class="cibil-range c-red">300–549</span>
+          <span class="cibil-label c-red">Poor</span>
+          <span class="cibil-desc">Most banks will refuse. Very high rejection rate.</span>
+        </div>
+        <div class="cibil-band" style="background:#FFF7ED;border-color:#FED7AA">
+          <span class="cibil-range c-amber">550–649</span>
+          <span class="cibil-label c-amber">Fair</span>
+          <span class="cibil-desc">NBFCs may approve at higher interest rates.</span>
+        </div>
+        <div class="cibil-band" style="background:#FEFCE8;border-color:#FEF08A">
+          <span class="cibil-range" style="color:#854D0E">650–699</span>
+          <span class="cibil-label" style="color:#854D0E">Average</span>
+          <span class="cibil-desc">Approval possible with a guarantor or collateral.</span>
+        </div>
+        <div class="cibil-band" style="background:#F0FDF4;border-color:#BBF7D0">
+          <span class="cibil-range c-green">700–749</span>
+          <span class="cibil-label c-green">Good</span>
+          <span class="cibil-desc">Most banks will consider. Decent interest rates.</span>
+        </div>
+        <div class="cibil-band" style="background:#F0FDF4;border-color:#4ADE8060">
+          <span class="cibil-range c-green">750–900</span>
+          <span class="cibil-label c-green">Excellent</span>
+          <span class="cibil-desc">Best rates, fast approval, premium loan offers.</span>
+        </div>
+      </div>
+
+      <!-- Govt schemes -->
+      <div class="card">
+        <div class="card-title">Indian Government Loan Schemes</div>
+        <div class="card-sub">You may qualify for subsidised / collateral-free government loans</div>
+        <div class="scheme-grid">
+          <div class="scheme-card">
+            <div class="scheme-name" style="color:#D4500A">PM Mudra Yojana</div>
+            <div class="scheme-desc">Small business loan up to ₹10 lakh. No collateral. Shishu / Kishore / Tarun tiers.</div>
+          </div>
+          <div class="scheme-card">
+            <div class="scheme-name" style="color:#1D4ED8">PM Awas Yojana</div>
+            <div class="scheme-desc">Home loan interest subsidy (6.5%) for EWS / LIG income groups.</div>
+          </div>
+          <div class="scheme-card">
+            <div class="scheme-name" style="color:#1A6B3A">Kisan Credit Card</div>
+            <div class="scheme-desc">Short-term credit for farmers at 4% p.a. up to ₹3 lakh.</div>
+          </div>
+          <div class="scheme-card">
+            <div class="scheme-name" style="color:#7C3AED">Stand Up India</div>
+            <div class="scheme-desc">₹10L – ₹1Cr for SC/ST borrowers and women entrepreneurs.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: AI RESULT
+══════════════════════════════════════════ -->
+<div id="page-result" class="page page-hidden">
+
+  <!-- Loading state -->
+  <div id="result-loading" class="loading-state" style="display:none">
+    <div class="loading-icon">🤖</div>
+    <div class="loading-text">AI is analysing the application…</div>
+    <div class="dots">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="loading-sub">Running RBI Rule Engine + XGBoost Model + SHAP TreeExplainer</div>
+  </div>
+
+  <!-- Error state -->
+  <div id="result-error" class="card" style="display:none;color:var(--red);line-height:1.8;font-size:13px"></div>
+
+  <!-- Empty state -->
+  <div id="result-empty" class="empty-state">
+    <div class="empty-icon">📋</div>
+    <div class="empty-title">No Analysis Yet</div>
+    <div class="empty-sub">Go to the Application Form tab, fill in the details, and click "Run AI Analysis".</div>
+  </div>
+
+  <!-- Result content -->
+  <div id="result-content" style="display:none">
+
+    <!-- Decision Banner -->
+    <div id="decision-banner" class="decision-banner">
+      <div>
+        <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;margin-bottom:8px;font-family:var(--mono)">
+          AI DECISION
+        </div>
+        <div id="decision-word" class="decision-word">—</div>
+        <div id="decision-explain" class="decision-explain"></div>
+        <div class="pill-row">
+          <div id="pill-risk"     class="pill">—</div>
+          <div id="pill-approval" class="pill">—</div>
+          <div id="pill-rec"      class="pill">—</div>
+        </div>
+      </div>
+
+      <!-- Gauge SVG -->
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 220 120" style="width:200px">
+          <path id="g-track"  d="" fill="none" stroke="#E2DDD5" stroke-width="13" stroke-linecap="round"/>
+          <path id="g-fill"   d="" fill="none" stroke="#D4500A" stroke-width="13" stroke-linecap="round"
+                style="transition: d 1s cubic-bezier(.4,0,.2,1)"/>
+          <line id="g-needle" x1="110" y1="95" x2="110" y2="37"
+                stroke="#D4500A" stroke-width="3" stroke-linecap="round"
+                style="transition: all 1s cubic-bezier(.4,0,.2,1)"/>
+          <circle id="g-dot" cx="110" cy="95" r="6" fill="#D4500A"/>
+          <text id="g-score" x="110" y="118" text-anchor="middle" fill="#1A1814"
+                style="font-size:22px;font-family:var(--mono);font-weight:700"></text>
+        </svg>
+        <div id="risk-badge" class="risk-badge">—</div>
+      </div>
+    </div>
+
+    <!-- Two-column: Factors + Actions -->
+    <div class="result-grid">
+
+      <!-- SHAP Factors -->
+      <div class="card">
+        <div class="card-title">Why did the AI decide this?</div>
+        <div class="card-sub">
+          Each bar shows how much a factor helped ▲ or hurt ▼ the application.
+          Click the bars to read the plain-English reason.
+        </div>
+        <div id="factors-container"></div>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--green)"></div> Helps approval
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--red)"></div> Increases risk
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: Actions + Model info -->
+      <div class="result-right">
+
+        <div class="card">
+          <div class="card-title">What Should You Do Next?</div>
+          <div class="card-sub">Specific steps to improve approval chances and creditworthiness</div>
+          <div id="actions-container"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">About This AI Model</div>
+          <div id="model-info"></div>
+          <div style="margin-top:12px;font-size:11px;color:var(--dim);line-height:1.6;font-style:italic;
+                      background:#FFFBEB;border:1px solid #FCD34D;padding:10px 14px;border-radius:6px">
+            &#9888; <strong>RBI Disclaimer:</strong> This is a demo system.
+            Real loan decisions must comply with the <strong>RBI Fair Practices Code</strong> and involve
+            certified credit professionals. This system uses a hybrid Rule + ML engine for educational purposes.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: LOAN GLOSSARY
+══════════════════════════════════════════ -->
+<div id="page-glossary" class="page page-hidden">
+  <div style="margin-bottom:20px">
+    <div style="font-size:20px;font-weight:800;margin-bottom:4px">Loan Glossary</div>
+    <div style="font-size:13px;color:var(--muted)">
+      Every financial and technical term in this project explained in plain English — no jargon.
+    </div>
+    <input id="gloss-search" class="inp gloss-search"
+           placeholder="Search a term…" oninput="filterGlossary()"/>
+  </div>
+  <div id="glossary-grid" class="glossary-grid"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     PAGE: MODEL METRICS
+══════════════════════════════════════════ -->
+<div id="page-metrics" class="page page-hidden">
+  <div style="margin-bottom:24px">
+    <div style="font-size:20px;font-weight:800;margin-bottom:4px">Model Performance Metrics</div>
+    <div style="font-size:13px;color:var(--muted)">
+      Evaluation results of the XGBoost model trained on Home Credit Default Risk dataset.
+    </div>
+  </div>
+
+  <!-- Summary stats row -->
+  <div id="metrics-stats" class="metrics-stats-row"></div>
+
+  <!-- Confusion Matrix + Feature Importance -->
+  <div class="metrics-grid">
+    <div class="card">
+      <div class="card-title">Confusion Matrix</div>
+      <div class="card-sub">How the model classified the 51,194 test samples (threshold = 0.50)</div>
+      <div id="confusion-matrix"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Top 10 Feature Importance</div>
+      <div class="card-sub">Which input features the XGBoost model relies on most heavily</div>
+      <div id="feature-importance"></div>
+    </div>
+  </div>
+
+  <!-- AUC-ROC Explanation -->
+  <div class="card" style="margin-top:20px">
+    <div class="card-title">What does AUC-ROC mean?</div>
+    <div id="auc-explanation" style="font-size:13px;color:var(--muted);line-height:1.8"></div>
+  </div>
+</div>
+
+<!-- Print footer (only visible during PDF print) -->
+<div id="print-footer" class="print-footer">
+  LoanXAI &nbsp;|&nbsp; <span id="print-date"></span>
+</div>
+
+<!-- ── JS (loaded at end for performance) ── -->
+<script src="static/js/main.js"></script>
+
+</body>
+</html>
