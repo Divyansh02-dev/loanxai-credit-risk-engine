@@ -38,3 +38,4 @@ LoanXAI simulates how modern lenders evaluate loan applications using:
 
 ## 🧩 System Flow
 
+User Input → Rule Engine → ML Model (XGBoost) → SHAP Explainer → Decision + ExplanationUser Input → Rule Engine → ML Model (XGBoost) → SHAP Explainer → Decision + Explanation
