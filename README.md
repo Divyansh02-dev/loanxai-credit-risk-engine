@@ -6,6 +6,16 @@ An Explainable AI-based Loan Approval System that combines **Machine Learning (X
 
 ---
 
+## 🚀 Live Demo
+
+👉 Try the app: https://loanxai-credit-risk-engine.onrender.com
+
+- Real-time loan approval prediction
+- Explainable AI (SHAP-based insights)
+- India-focused credit evaluation (CIBIL, income, etc.)
+
+> ⏳ First load may be slow (Render free tier sleeps when inactive)
+
 ## 🧠 Overview
 
 LoanXAI simulates how modern lenders evaluate loan applications using:
