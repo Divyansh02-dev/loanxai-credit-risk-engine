@@ -5,7 +5,7 @@
 
 "use strict";
 
-const API_BASE = "";
+const API_BASE = location.port === "5500" ? "http://127.0.0.1:5000" : "";
 
 // ─────────────────────────────────────────────
 // Utility helpers
@@ -168,7 +168,7 @@ function renderResult(data, form) {
   $("decision-word").textContent = dec;
   $("decision-word").style.color = pal.word;
 
-  // Plain-English explanation — different for RULE_BASED vs ML_MODEL
+  // Plain-English explanation — different for RULE_BASED vs AFFORDABILITY_OVERRIDE vs ML_MODEL
   const name = form.name || "The applicant";
   let explain = "";
 
@@ -180,6 +180,28 @@ function renderResult(data, form) {
       <div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:6px">
         \u26A0 Model prediction was skipped because this application violates RBI safety rules.
         Address the issue above and reapply.
+      </div>`;
+  } else if (source === "AFFORDABILITY_OVERRIDE") {
+    const badgeCls = dec === "REJECTED" ? "rule-override-badge" : "afford-review-badge";
+    const badgeIcon = dec === "REJECTED" ? "\u274C" : "\u26A0\uFE0F";
+    const badgeText = dec === "REJECTED" ? "Rejected (Affordability)" : "Manual Review Required";
+    const reasonCol = dec === "REJECTED" ? "#7F1D1D" : "#78350F";
+    explain = `<div class="${badgeCls}">${badgeIcon} ${badgeText}</div>
+      <div style="margin:10px 0;font-size:13px;line-height:1.8;color:${reasonCol}">
+        <strong>Reason:</strong> ${data.rule_reason || "Affordability check failed."}
+      </div>`;
+    if (data.risk_explanation) {
+      explain += `<div style="margin:6px 0;font-size:12px;line-height:1.7;color:${reasonCol};font-weight:600">
+        \u26A0 ${data.risk_explanation}
+      </div>`;
+    }
+    if (data.recommendation) {
+      explain += `<div style="margin:8px 0;font-size:12px;line-height:1.7;color:var(--muted);background:rgba(255,255,255,.6);padding:8px 12px;border-radius:6px;border-left:3px solid ${pal.border}">
+        <strong>\uD83D\uDCA1 Recommendation:</strong> ${data.recommendation}
+      </div>`;
+    }
+    explain += `<div style="font-size:11px;color:var(--muted);font-style:italic;margin-top:6px">
+        ML model prediction was skipped because affordability rules identified financial risk.
       </div>`;
   } else if (dec === "APPROVED") {
     explain = `<strong>${name}</strong> has been assessed with a
@@ -210,9 +232,15 @@ function renderResult(data, form) {
   $("pill-rec").style.cssText = "background:var(--orange-lt);color:var(--orange);border-color:#FED7AA";
 
   // Source + Confidence pills
-  const srcCol = source === "RULE_BASED" ? "var(--red)" : "var(--green)";
-  const srcBg  = source === "RULE_BASED" ? "#FEF2F2"    : "#F0FDF4";
-  const srcLabel = source === "RULE_BASED" ? "\uD83D\uDEE1 Rule Engine" : "\uD83E\uDD16 ML Model";
+  const srcCol = source === "RULE_BASED" ? "var(--red)"
+               : source === "AFFORDABILITY_OVERRIDE" ? "var(--amber)"
+               : "var(--green)";
+  const srcBg  = source === "RULE_BASED" ? "#FEF2F2"
+               : source === "AFFORDABILITY_OVERRIDE" ? "#FFFBEB"
+               : "#F0FDF4";
+  const srcLabel = source === "RULE_BASED" ? "\uD83D\uDEE1 Rule Engine"
+                 : source === "AFFORDABILITY_OVERRIDE" ? "\u26A0\uFE0F Affordability Check"
+                 : "\uD83E\uDD16 ML Model";
 
   // Add source pill after existing pills (create if not exists)
   let pillSrc = document.getElementById("pill-source");
@@ -265,6 +293,59 @@ function renderResult(data, form) {
           <strong>Why do we have rules?</strong> Indian banks follow strict guidelines set by the
           Reserve Bank of India (RBI). Certain applications are automatically declined regardless of
           what the AI model predicts, because they violate fundamental lending safety criteria.
+        </div>
+      </div>`;
+  } else if (source === "AFFORDABILITY_OVERRIDE") {
+    // Show affordability override explanation with metrics
+    const af = data.affordability || {};
+    const decClass = dec === "REJECTED" ? "afford-notice--reject" : "afford-notice--review";
+    const decIcon  = dec === "REJECTED" ? "\u274C" : "\u26A0\uFE0F";
+    const decTitle = dec === "REJECTED"
+        ? "Affordability Check Failed — Application Rejected"
+        : "Affordability Concern — Manual Review Required";
+
+    let metricsHTML = "";
+    if (af.dti_percentage !== undefined) {
+      const dtiCol  = af.dti_safe ? "var(--green)" : "var(--red)";
+      const dtiBg   = af.dti_safe ? "#F0FDF4" : "#FEF2F2";
+      const dtiIcon = af.dti_safe ? "\u2705" : "\u274C";
+      const ltiCol  = af.lti_safe ? "var(--green)" : "var(--amber)";
+      const ltiBg   = af.lti_safe ? "#F0FDF4" : "#FFFBEB";
+      const ltiIcon = af.lti_safe ? "\u2705" : "\u26A0\uFE0F";
+      metricsHTML = `
+        <div class="afford-metrics-grid">
+          <div class="afford-metric" style="background:${dtiBg};border-color:${dtiCol}40">
+            <div class="afford-metric-icon">${dtiIcon}</div>
+            <div class="afford-metric-label">DTI Ratio</div>
+            <div class="afford-metric-value" style="color:${dtiCol}">${af.dti_percentage}%</div>
+            <div class="afford-metric-hint">EMI \u20b9${af.monthly_emi?.toLocaleString("en-IN") || "—"} / Income \u20b9${af.monthly_income?.toLocaleString("en-IN") || "—"}</div>
+            <div class="afford-metric-status" style="color:${dtiCol}">${af.dti_safe ? "Within safe limit (\u226440%)" : "Exceeds safe limit (>40%)"}</div>
+          </div>
+          <div class="afford-metric" style="background:${ltiBg};border-color:${ltiCol}40">
+            <div class="afford-metric-icon">${ltiIcon}</div>
+            <div class="afford-metric-label">Loan-to-Income</div>
+            <div class="afford-metric-value" style="color:${ltiCol}">${af.lti_ratio}\u00d7</div>
+            <div class="afford-metric-hint">Loan / Annual Income</div>
+            <div class="afford-metric-status" style="color:${ltiCol}">${af.lti_safe ? "Within guideline (\u22644\u00d7)" : "Above guideline (>4\u00d7)"}</div>
+          </div>
+        </div>`;
+    }
+
+    fc.innerHTML = `
+      <div class="afford-notice ${decClass}">
+        <div class="afford-notice-icon">${decIcon}</div>
+        <div class="afford-notice-title">${decTitle}</div>
+        <div class="afford-notice-body">
+          ${data.rule_reason || "Affordability validation failed."}
+        </div>
+        ${metricsHTML}
+        ${data.risk_explanation ? `<div class="afford-risk-text">\u26A0 ${data.risk_explanation}</div>` : ""}
+        <div class="afford-notice-rule">Rule triggered: <code>${data.rule || "AFFORDABILITY"}</code></div>
+        <div class="afford-notice-body" style="margin-top:10px">
+          <strong>Why does affordability override the AI model?</strong> Even if the ML model predicts
+          low default risk (e.g. due to high CIBIL score or stable employment), the loan cannot be
+          approved if basic financial ratios show the applicant cannot realistically afford the
+          repayments. This protects both the borrower and the lender.
         </div>
       </div>`;
   } else {
@@ -338,7 +419,9 @@ function renderResult(data, form) {
     ["Dataset",        info.dataset],
     ["Features",       info.features_used],
     ["Explainability", info.explainability],
-    ["Engine",         info.engine === "RULE_BASED" ? "\uD83D\uDEE1 Rule-Based" : "\uD83E\uDD16 ML Model"],
+    ["Engine",         info.engine === "RULE_BASED" ? "\uD83D\uDEE1 Rule-Based"
+                     : info.engine === "AFFORDABILITY_OVERRIDE" ? "\u26A0\uFE0F Affordability Override"
+                     : "\uD83E\uDD16 ML Model"],
     ["Decision",       dec],
     ["Risk Score",     `${risk.toFixed(1)} / 100`],
   ];

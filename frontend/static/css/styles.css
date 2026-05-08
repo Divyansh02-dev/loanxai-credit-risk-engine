@@ -534,6 +534,135 @@ input[type=number]::-webkit-inner-spin-button { opacity: .4; }
 }
 
 /* ══════════════════════════════════════════════
+   AFFORDABILITY OVERRIDE UI
+══════════════════════════════════════════════ */
+.afford-review-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #B45309, #D97706);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px rgba(180,83,9,.3);
+}
+.afford-notice {
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-top: 8px;
+  border: 1.5px solid;
+}
+.afford-notice--reject {
+  background: linear-gradient(135deg, #FEF2F2, #FFF5F5);
+  border-color: #FECACA;
+}
+.afford-notice--review {
+  background: linear-gradient(135deg, #FFFBEB, #FFF8E1);
+  border-color: #FDE68A;
+}
+.afford-notice-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.afford-notice-title {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+.afford-notice--reject .afford-notice-title { color: #991B1B; }
+.afford-notice--review .afford-notice-title { color: #92400E; }
+.afford-notice-body {
+  font-size: 13px;
+  line-height: 1.8;
+}
+.afford-notice--reject .afford-notice-body { color: #7F1D1D; }
+.afford-notice--review .afford-notice-body { color: #78350F; }
+.afford-notice-rule {
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: var(--mono);
+}
+.afford-notice--reject .afford-notice-rule {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+.afford-notice--review .afford-notice-rule {
+  background: #FEF3C7;
+  color: #92400E;
+}
+.afford-notice-rule code {
+  font-weight: 700;
+}
+.afford-notice--reject .afford-notice-rule code { color: #B91C1C; }
+.afford-notice--review .afford-notice-rule code { color: #B45309; }
+
+/* Affordability Metrics Grid */
+.afford-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+.afford-metric {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid;
+  text-align: center;
+}
+.afford-metric-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+.afford-metric-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: var(--mono);
+  margin-bottom: 4px;
+}
+.afford-metric-value {
+  font-size: 28px;
+  font-weight: 800;
+  font-family: var(--mono);
+  line-height: 1.2;
+}
+.afford-metric-hint {
+  font-size: 10px;
+  color: var(--dim);
+  margin-top: 4px;
+}
+.afford-metric-status {
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 6px;
+  font-family: var(--mono);
+  letter-spacing: 0.3px;
+}
+.afford-risk-text {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+.afford-notice--reject .afford-risk-text {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+.afford-notice--review .afford-risk-text {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+/* ══════════════════════════════════════════════
    MODEL METRICS TAB
 ══════════════════════════════════════════════ */
 .metrics-stats-row {

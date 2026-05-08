@@ -629,6 +629,81 @@ def apply_hard_rules(form):
     return {"override": False}
 
 
+# ─────────────────────────────────────────────
+# Affordability Validation Layer
+# Overrides ML prediction when financial ratios
+# indicate unrealistic repayment capacity
+# ─────────────────────────────────────────────
+def check_affordability(form):
+    """
+    Validates that the applicant can realistically afford
+    the loan based on DTI (Debt-to-Income) and LTI
+    (Loan-to-Income) ratios.
+
+    Priority:
+      1. DTI > 40%  → Auto REJECT  (EMI exceeds safe limit)
+      2. LTI > 4×   → MANUAL REVIEW (loan is disproportionate)
+
+    Returns dict with override info and affordability metrics.
+    """
+    income      = float(form.get("annual_income", 0))
+    monthly_emi = float(form.get("monthly_emi", 0))
+    loan_amount = float(form.get("loan_amount", 0))
+
+    monthly_income = income / 12.0 if income > 0 else 0
+    dti_ratio      = (monthly_emi / monthly_income) if monthly_income > 0 else 999
+    lti_ratio      = (loan_amount / income) if income > 0 else 999
+
+    metrics = {
+        "monthly_income":  round(monthly_income, 2),
+        "monthly_emi":     round(monthly_emi, 2),
+        "dti_ratio":       round(dti_ratio, 4),
+        "dti_percentage":  round(dti_ratio * 100, 1),
+        "lti_ratio":       round(lti_ratio, 2),
+        "dti_safe":        dti_ratio <= 0.40,
+        "lti_safe":        lti_ratio <= 4.0,
+    }
+
+    # ── DTI Check: EMI > 40% of monthly income → REJECT ──
+    if dti_ratio > 0.40:
+        safe_emi = round(monthly_income * 0.40)
+        return {
+            "override":  True,
+            "decision":  "REJECTED",
+            "rule":      "DTI_EXCEEDS_40_PERCENT",
+            "reason":    (f"Monthly EMI of ₹{monthly_emi:,.0f} is {metrics['dti_percentage']}% "
+                          f"of your monthly income (₹{monthly_income:,.0f}). This exceeds the "
+                          f"safe affordability limit of 40%. Lenders require that your total "
+                          f"EMI burden stays below 40% of monthly income to ensure you can "
+                          f"cover living expenses and emergencies."),
+            "risk_explanation": "Applicant repayment capacity is insufficient.",
+            "recommendation":  (f"Reduce your EMI to ₹{safe_emi:,.0f} or below (40% of monthly income). "
+                                 f"You can do this by requesting a smaller loan amount, choosing a "
+                                 f"longer tenure, or showing additional income sources."),
+            "metrics":   metrics,
+        }
+
+    # ── LTI Check: Loan > 4× annual income → MANUAL REVIEW ──
+    if lti_ratio > 4.0:
+        safe_loan = round(income * 4.0)
+        return {
+            "override":  True,
+            "decision":  "MANUAL REVIEW",
+            "rule":      "LTI_EXCEEDS_4X",
+            "reason":    (f"Loan amount of ₹{loan_amount:,.0f} is {lti_ratio:.1f}× your "
+                          f"annual income (₹{income:,.0f}). Indian banking guidelines "
+                          f"recommend keeping loans within 4× annual income. Applications "
+                          f"exceeding this ratio require manual review by a loan officer."),
+            "risk_explanation": "Loan amount is too high relative to annual income.",
+            "recommendation":  (f"Consider reducing the loan to ₹{safe_loan:,.0f} (4× your income) "
+                                 f"for faster approval. Alternatively, add a co-applicant with "
+                                 f"stable income or provide additional collateral."),
+            "metrics":   metrics,
+        }
+
+    return {"override": False, "metrics": metrics}
+
+
 def get_confidence_level(probability):
     """Classify prediction confidence into tiers."""
     if probability >= 90:
@@ -701,7 +776,54 @@ def predict():
                 },
             })
 
-        # ── STEP 2: ML Prediction (no rule override) ──
+        # ── STEP 1b: Affordability Validation ──
+        # Runs BEFORE ML prediction — overrides model when financial
+        # ratios indicate the applicant cannot realistically repay.
+        afford_result = check_affordability(form)
+
+        if afford_result["override"]:
+            afford_decision = afford_result["decision"]
+            afford_metrics  = afford_result["metrics"]
+            actions = generate_action_plan(form, afford_decision)
+
+            # Add affordability-specific action at the top
+            actions.insert(0, {
+                "title":    "Address Affordability Concern",
+                "detail":   afford_result["recommendation"],
+                "impact":   "High",
+                "timeline": "Immediate",
+            })
+
+            risk_score = 75 if afford_decision == "REJECTED" else 55
+            approval_pct = 25 if afford_decision == "REJECTED" else 45
+
+            return jsonify({
+                "decision":             afford_decision,
+                "risk_score":           risk_score,
+                "default_probability":  risk_score,
+                "approval_probability": approval_pct,
+                "source":               "AFFORDABILITY_OVERRIDE",
+                "rule":                 afford_result.get("rule", "AFFORDABILITY"),
+                "rule_reason":          afford_result["reason"],
+                "risk_explanation":     afford_result.get("risk_explanation", ""),
+                "recommendation":       afford_result.get("recommendation", ""),
+                "affordability":        afford_metrics,
+                "confidence":           {"level": "High", "color": "green",
+                                         "description": "Affordability rule triggered with certainty"},
+                "recommended_loan":     round(requested * 0.50) if afford_decision == "REJECTED" else round(requested * 0.75),
+                "recommended_note":     afford_result["recommendation"],
+                "factors":              [],
+                "actions":              actions[:4],
+                "model_info": {
+                    "type":           type(model).__name__,
+                    "dataset":        "Home Credit Default Risk",
+                    "features_used":  len(FEATURES),
+                    "explainability": "Affordability Override (ML skipped)",
+                    "engine":         "AFFORDABILITY_OVERRIDE",
+                },
+            })
+
+        # ── STEP 2: ML Prediction (no rule or affordability override) ──
         feat_dict = build_feature_vector(form)
         X = pd.DataFrame([feat_dict])[FEATURES]
 
@@ -766,6 +888,9 @@ def predict():
         # ── STEP 5: Action plan ──
         actions = generate_action_plan(form, decision)
 
+        # Include affordability metrics in all ML responses
+        afford_metrics = afford_result.get("metrics", {})
+
         return jsonify({
             "decision":             decision,
             "risk_score":           risk_score,
@@ -781,6 +906,7 @@ def predict():
             "top_positive_factors": top_pos,
             "suggestions":          suggestions,
             "actions":              actions,
+            "affordability":        afford_metrics,
             "model_info": {
                 "type":           type(model).__name__,
                 "dataset":        "Home Credit Default Risk",
